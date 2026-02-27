@@ -35,9 +35,7 @@ RUN userdel -r ubuntu || true && \
 WORKDIR /app
 COPY --from=unpack --chown=1000:1000 /out/app/ /app/
 
-RUN chmod +x /app/manatan \
- && mkdir -p /home/manatan/.local/share /home/manatan/.config /home/manatan/.cache \
- && chown -R 1000:1000 /home/manatan
+RUN chmod +x /app/manatan
 
 USER 1000:1000
 
