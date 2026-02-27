@@ -1,6 +1,5 @@
 # syntax=docker/dockerfile:1
 
-# Stage 1: unpack release tarball (throwaway stage)
 FROM --platform=$BUILDPLATFORM busybox:1.36 AS unpack
 WORKDIR /out/app
 ARG TARGETARCH
@@ -17,14 +16,13 @@ RUN set -eux; \
       echo "Unsupported architecture: $TARGETARCH" >&2; exit 1; \
     fi
 
-# Stage 2: runtime
-FROM debian:bookworm-slim
+FROM ubuntu:24.04
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     libglib2.0-0 \
     libgtk-3-0 \
-    libayatana-appindicator3-1 \
+    libappindicator3-1 \
     librsvg2-common \
     libxdo3 \
     fuse \
