@@ -1,0 +1,63 @@
+# Manatan (Docker runner)
+
+This repository publishes a prebuilt **runner** container image for Manatan to GitHub Container Registry (GHCR).
+
+## Image
+
+- `ghcr.io/ippo-michi/manatan:latest`
+- `ghcr.io/ippo-michi/manatan:<upstream-version>` (example: `v3.2.8`)
+
+## Docker Compose
+
+```bash
+services:
+  init-permissions:
+    image: busybox
+    command: sh -c "mkdir -p /data/Tachidesk /data/manatan && chown -R 1000:1000 /data"
+    user: root
+    volumes:
+      - ./data:/data
+
+  manatan:
+    image: ghcr.io/ippo-michi/manatan
+    # user: 1000:1000
+    environment:
+      - TZ=Etc/UTC # Use TZ database name from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+      # Comment these out if you do not use the flaresolverr container at the bottom of this file
+      - FLARESOLVERR_ENABLED=true
+      - FLARESOLVERR_URL=http://flaresolverr:8191
+      - MANATAN_HEADLESS=true
+#  #################################################################################################
+#
+#    !!! IMPORTANT !!!
+#     - server settings can be changed during runtime in the WebUI
+#     - providing an environment variable will OVERWRITE the current setting value when starting the container
+#
+#  #################################################################################################
+#
+#    example for setting env vars:
+#
+#      - BIND_IP=0.0.0.0
+#      - BIND_PORT=4568
+#      - SOCKS_PROXY_ENABLED=false
+#      - DOWNLOAD_AS_CBZ=true
+#      - AUTH_MODE=basic_auth
+#      - AUTH_USERNAME=manga
+#      - AUTH_PASSWORD=hello123
+#      - EXTENSION_REPOS=["http://github.com/orginazation-name/repo-name", "http://github.com/orginazation-name-2/repo-name-2"]
+    volumes:
+      - ./data/Tachidesk:/home/manatan/.local/share/Tachidesk
+      - ./data/manatan:/home/manatan/.local/share/manatan
+    ports:
+      - "4568:4568"
+    restart: unless-stopped
+    depends_on:
+      - flaresolverr
+      - init-permissions
+
+  flaresolverr:
+    image: ghcr.io/thephaseless/byparr:latest
+    container_name: flaresolverr
+    environment:
+      - TZ=Etc/UTC # Use TZ database name from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+    restart: unless-stopped
