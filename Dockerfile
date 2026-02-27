@@ -28,13 +28,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fuse \
  && rm -rf /var/lib/apt/lists/*
 
+# Create the user + home
+RUN userdel -r ubuntu || true && \
+    useradd -m -u 1000 -s /bin/bash manatan
+
 WORKDIR /app
 COPY --from=unpack --chown=1000:1000 /out/app/ /app/
-RUN chmod +x /app/manatan
+
+RUN chmod +x /app/manatan \
+ && mkdir -p /home/manatan/.local/share /home/manatan/.config /home/manatan/.cache \
+ && chown -R 1000:1000 /home/manatan
 
 USER 1000:1000
+
 EXPOSE 4568
 ENV MANATAN_HEADLESS=true
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
+
 ENTRYPOINT ["/app/manatan"]
